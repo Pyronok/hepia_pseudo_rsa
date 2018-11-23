@@ -1,0 +1,6 @@
+[package]
+name = "project_rsa"
+version = "0.1.0"
+authors = ["francesc.mami"]
+
+[dependencies]
