@@ -42,8 +42,8 @@ fn main() {
     }
     
     match String::from_utf8(convertion_vec_byte(&mut m)) {
-        Ok(S) => { println!("{}", S); }
-        Err(E) => { println!("{}", E); }
+        Ok(s) => { println!("{}", s); }
+        Err(e) => { println!("{}", e); }
     }
 }
 
@@ -51,19 +51,19 @@ fn factoriser(n: usize) -> (usize, usize) {
     let mut b: usize = 2;
     let mut p: usize = 0;
     let mut q: usize = 0;
-    let mut nt : usize = n;
+    let mut n_temp : usize = n;
     while b != 0 {
-        while nt % b != 0 {
+        while n_temp % b != 0 {
             b += 1;
         }
-        if nt / b == 1 {
-            //println!("p = {}", b);
+        if n_temp / b == 1 {
+            println!("p = {}", b);
             p = b;
             break;
         }
         //println!("q = {}", b);
         q = b;
-        nt /= b;
+        n_temp /= b;
     }
     return (p, q);
 }
@@ -71,39 +71,40 @@ fn factoriser(n: usize) -> (usize, usize) {
 fn generer_cle_privee(p: usize, q: usize, e: usize) -> (usize, usize) {
     let f: usize = (p - 1) * (q - 1);
     let n: usize = p * q;
-    let t = euclide_etendu(e as isize, f as isize);
+
+    let tuple_bezout = euclide_etendu(e as isize, f as isize);
     let mut d: usize = 0;
-    if t.0 >= 0 {
-        d = t.0 as usize % f;
+    if tuple_bezout.0 >= 0 {
+        d = tuple_bezout.0 as usize % f;
     } else {
-        d = f-((t.0).abs() % f as isize) as usize;
+        d = f-((tuple_bezout.0).abs() % f as isize) as usize;
     }
     return (n, d);
 }
 
 fn euclide_etendu(a:isize, b:isize) -> (isize,isize) {
-    let mut r:[isize;3] = [a,b,0];
+    let mut resultat_temp:[isize;3] = [a,b,0];
+    //bezout x et y
     let mut x:[isize;3] = [1,0,0];
     let mut y:[isize;3] = [0,1,0];
     let mut i:[usize;3] = [0,1,2];
-    let mut q = 0;
-    let mut j = 0;
     loop {
-        r[i[2]] = r[i[0]] % r[i[1]];
-        q = r[i[0]] / r[i[1]];
-        if r[i[2]] == 0 {
+        resultat_temp[i[2]] = resultat_temp[i[0]] % resultat_temp[i[1]];
+        //definition du quotient de la division euclidienne
+        let q = resultat_temp[i[0]] / resultat_temp[i[1]];
+        if resultat_temp[i[2]] == 0 {
             x[i[2]] = x[i[1]];
             y[i[2]] = y[i[1]];
             break;
         }
+        //utilisation du quotient afin de trouver le bézout x et y suivant
         x[i[2]] = x[i[0]] - q * x[i[1]];
         y[i[2]] = y[i[0]] - q * y[i[1]];
+
         for j in 0..3 {
             i[j] += 1;
             i[j] %= 3;
         }
-        
-        j+=1;
     }
     return (x[i[2]], y[i[2]]);
 }
@@ -115,11 +116,9 @@ fn decrypter(y: usize, key: (usize, usize)) -> usize {
 fn exponentiation_rapide(m: usize, e: usize, n: usize) -> usize {
     let mut m:   usize = m;
     let mut e:   usize = e;
-    let mut n:   usize = n;
     let mut mul: usize = 1;
-    let mut res: usize = 0;
     while e > 0 {
-        res = m % n;
+        let res = m % n;
         m = res * res;
         if e & 1 == 1 {
             mul *= res;
