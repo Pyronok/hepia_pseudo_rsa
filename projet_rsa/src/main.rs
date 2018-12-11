@@ -1,8 +1,8 @@
 fn main() {
-    let n: usize = 2901984751;
-    let e: usize = 9103;
-    let mut m: [usize; 31] = 
-    [1780565330, 
+    let n: u64 = 2901984751;
+    let e: u64 = 9103;
+    let mut m: Vec<u64> = 
+    vec![1780565330, 
      1418927598, 
      543482106, 
      729172139, 
@@ -34,59 +34,68 @@ fn main() {
      1681846270, 
      432128454];
      
+     //recupere un tuple contenant les valeurs de p et q 
     let p_q = factoriser(n);
     let cle_privee = generer_cle_privee(p_q.0, p_q.1, e);
     
     for i in 0..m.len() {
+        //dechiffrage de chaque champ du message
         m[i] = decrypter(m[i], cle_privee);
     }
-    
+    //traduction du code decrypter en caracteres lisibles
     match String::from_utf8(convertion_vec_byte(&mut m)) {
         Ok(s) => { println!("{}", s); }
         Err(e) => { println!("{}", e); }
     }
 }
 
-fn factoriser(n: usize) -> (usize, usize) {
-    let mut b: usize = 2;
-    let mut p: usize = 0;
-    let mut q: usize = 0;
-    let mut n_temp : usize = n;
-    while b != 0 {
+fn factoriser(n: u64) -> (u64, u64) {
+    //b est un indice permettant de
+    let mut b: u64 = 2;
+    let p: u64;
+    let mut q: u64 = 0;
+    let mut n_temp : u64 = n;
+    loop{
+        //incrémente b jusqu'à trouver un facteur qui divise n
         while n_temp % b != 0 {
             b += 1;
         }
-        if n_temp / b == 1 {
+        //detecte l'autre partie 
+        if n_temp == b {
             println!("p = {}", b);
             p = b;
             break;
         }
-        //println!("q = {}", b);
+        println!("q = {}", b);
         q = b;
+        //division de n par q
         n_temp /= b;
     }
     return (p, q);
 }
 
-fn generer_cle_privee(p: usize, q: usize, e: usize) -> (usize, usize) {
-    let f: usize = (p - 1) * (q - 1);
-    let n: usize = p * q;
+fn generer_cle_privee(p: u64, q: u64, e: u64) -> (u64, u64) {
+    let phi: u64 = (p - 1) * (q - 1);
+    let n: u64 = p * q;
 
-    let tuple_bezout = euclide_etendu(e as isize, f as isize);
-    let mut d: usize = 0;
-    if tuple_bezout.0 >= 0 {
-        d = tuple_bezout.0 as usize % f;
+    let tuple_bezout = euclide_etendu(e as i64, phi as i64);
+    //condition retournant le modulo de p  
+    let d: u64 = if tuple_bezout.0 >= 0 {
+        // si p est positif
+        tuple_bezout.0 as u64 % phi
     } else {
-        d = f-((tuple_bezout.0).abs() % f as isize) as usize;
-    }
+        // si p est negatif
+        phi-((tuple_bezout.0).abs() % phi as i64) as u64
+    };
+    //renvoie la cle privee [n,d]
     return (n, d);
 }
 
-fn euclide_etendu(a:isize, b:isize) -> (isize,isize) {
-    let mut resultat_temp:[isize;3] = [a,b,0];
+fn euclide_etendu(a:i64, b:i64) -> (i64,i64) {
+    let mut resultat_temp:[i64;3] = [a,b,0];
     //bezout x et y
-    let mut x:[isize;3] = [1,0,0];
-    let mut y:[isize;3] = [0,1,0];
+    let mut x:[i64;3] = [1,0,0];
+    let mut y:[i64;3] = [0,1,0];
     let mut i:[usize;3] = [0,1,2];
     loop {
         resultat_temp[i[2]] = resultat_temp[i[0]] % resultat_temp[i[1]];
@@ -109,14 +118,14 @@ fn euclide_etendu(a:isize, b:isize) -> (isize,isize) {
     return (x[i[2]], y[i[2]]);
 }
 
-fn decrypter(y: usize, key: (usize, usize)) -> usize {
+fn decrypter(y: u64, key: (u64, u64)) -> u64 {
     return exponentiation_rapide(y, key.1, key.0);
 }
 
-fn exponentiation_rapide(m: usize, e: usize, n: usize) -> usize {
-    let mut m:   usize = m;
-    let mut e:   usize = e;
-    let mut mul: usize = 1;
+fn exponentiation_rapide(m: u64, e: u64, n: u64) -> u64 {
+    let mut m:   u64 = m;
+    let mut e:   u64 = e;
+    let mut mul: u64 = 1;
     while e > 0 {
         let res = m % n;
         m = res * res;
@@ -129,13 +138,13 @@ fn exponentiation_rapide(m: usize, e: usize, n: usize) -> usize {
     return mul;
 }
 
-fn convertion_vec_byte(m : &mut [usize; 31]) -> Vec<u8> {
+fn convertion_vec_byte(m : &mut Vec<u64>) -> Vec<u8> {
     let mut message = Vec::new();
     let mut mult = 0;
     let mut tmp_byte = 0;
     for i in 0..m.len() {
         while m[i] > 0 {
-            tmp_byte += ((m[i] & 1)) * 2_usize.pow(mult);
+            tmp_byte += ((m[i] & 1)) * 2_u64.pow(mult);
             m[i] >>= 1;
             mult += 1;
             if mult == 8 || m[i] == 0 {
