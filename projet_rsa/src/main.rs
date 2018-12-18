@@ -139,6 +139,7 @@ fn exponentiation_rapide(m: u64, e: u64, n: u64) -> u64 {
     while e > 0 {
         let reste = m % n;
         m = reste * reste;
+        //définit si on doit intégrer ce nombre ou non au resultat
         if e & 1 == 1 {
             resultat *= reste;
             resultat %= n;
