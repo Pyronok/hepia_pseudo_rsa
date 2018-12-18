@@ -1,9 +1,3 @@
-///
-///  Nom du projet 		: projet_rsa
-///  But du projet		: décoder un message donné grâce aux valeurs données par défaut
-///  Date de création	: décembre 2018
-///  Version			: 0.1.0
-///  Auteurs            : Rosset Alexandre ; Julien Ruehl ; Mami Francesco
 fn main() {
     let n: u64 = 2901984751;
     let e: u64 = 9103;
@@ -46,9 +40,9 @@ fn main() {
     
     for i in 0..m.len() {
         //dechiffrage de chaque champ du message
-        m[i] = dechiffrer(m[i], cle_privee);
+        m[i] = decrypter(m[i], cle_privee);
     }
-    //traduction du code dechiffrer en caracteres lisibles
+    //traduction du code decrypter en caracteres lisibles
     match String::from_utf8(convertion_vec_byte(&mut m)) {
         Ok(s) => { println!("{}", s); }
         Err(e) => { println!("{}", e); }
@@ -128,24 +122,24 @@ fn euclide_etendu(a:i64, b:i64) -> (i64,i64) {
     }
 }
 
-fn dechiffrer(y: u64, key: (u64, u64)) -> u64 {
+fn decrypter(y: u64, key: (u64, u64)) -> u64 {
     return exponentiation_rapide(y, key.1, key.0);
 }
 
 fn exponentiation_rapide(m: u64, e: u64, n: u64) -> u64 {
     let mut m:   u64 = m;
     let mut e:   u64 = e;
-    let mut resultat: u64 = 1;
+    let mut mul: u64 = 1;
     while e > 0 {
-        let reste = m % n;
-        m = reste * reste;
+        let res = m % n;
+        m = res * res;
         if e & 1 == 1 {
-            resultat *= reste;
-            resultat %= n;
+            mul *= res;
+            mul %= n;
         }
         e >>= 1;
     }
-    return resultat;
+    return mul;
 }
 
 fn convertion_vec_byte(m : &mut Vec<u64>) -> Vec<u8> {
